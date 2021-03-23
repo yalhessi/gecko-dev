@@ -1,0 +1,42 @@
+# Build only the JS shell
+ac_add_options --enable-application=js
+
+# Disable Optimization, for the most accurate debugging experience
+ac_add_options --disable-optimize
+# Enable the debugging tools: Assertions, debug only code etc.
+ac_add_options --enable-debug
+# Enable the JIT spew
+ac_add_options --enable-jitspew
+#### Add Macro information for debugging
+###ac_add_options --enable-debug-symbols=-g3
+
+# Enable fuzzing
+ac_add_options --enable-fuzzing
+
+# Enable address sanitizer
+ac_add_options --enable-address-sanitizer
+
+# Add ASan to our compiler flags
+export CFLAGS="-fsanitize=fuzzer,address -Dxmalloc=myxmalloc -fPIC"
+export CXXFLAGS="-fsanitize=fuzzer,address -Dxmalloc=myxmalloc -fPIC"
+
+# Additionally, we need the ASan flag during linking. Normally, our C/CXXFLAGS would
+# be used during linking as well but there is at least one place in our build where
+# our CFLAGS are not added during linking.
+# Note: The use of this flag causes Clang to automatically link the ASan runtime :)
+export LDFLAGS="-fsanitize=fuzzer,address"
+
+# These three are required by ASan
+ac_add_options --disable-jemalloc
+ac_add_options --disable-crashreporter
+
+# Keep symbols to symbolize ASan traces later
+export MOZ_DEBUG_SYMBOLS=1
+ac_add_options --enable-debug-symbols
+ac_add_options --disable-install-strip
+
+# ASan specific options on Linux
+ac_add_options --enable-valgrind
+
+# ASan specific options on Linux
+ac_add_options --enable-js-fuzzilli
