@@ -21,18 +21,13 @@ UNIFIED_SOURCES += [
     "AlignmentMaskAnalysis.cpp",
     "BacktrackingAllocator.cpp",
     "Bailouts.cpp",
-    "BaselineBailouts.cpp",
-    "BaselineCacheIRCompiler.cpp",
     "BaselineCodeGen.cpp",
     "BaselineDebugModeOSR.cpp",
     "BaselineFrame.cpp",
     "BaselineFrameInfo.cpp",
-    "BaselineIC.cpp",
     "BaselineJIT.cpp",
     "BitSet.cpp",
     "BytecodeAnalysis.cpp",
-    "CacheIR.cpp",
-    "CacheIRCompiler.cpp",
     "CacheIRHealth.cpp",
     "CacheIRSpewer.cpp",
     "CodeGenerator.cpp",
@@ -261,3 +256,20 @@ GeneratedFile(
 
 if CONFIG["FUZZING_INTERFACES"] or CONFIG["FUZZING_JS_FUZZILLI"]:
     include("/tools/fuzzing/libfuzzer-config.mozbuild")
+    SOURCES += [
+        "BaselineBailouts.cpp",
+        "BaselineCacheIRCompiler.cpp",
+        "BaselineIC.cpp",
+        "CacheIR.cpp",
+        "CacheIRCompiler.cpp",
+    ]
+else:
+    UNIFIED_SOURCES += [
+        "BaselineBailouts.cpp",
+        "BaselineCacheIRCompiler.cpp",
+        "BaselineIC.cpp",
+        "CacheIR.cpp",
+        "CacheIRCompiler.cpp",
+]
+
+

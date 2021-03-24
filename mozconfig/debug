@@ -12,19 +12,11 @@ ac_add_options --enable-jitspew
 
 # Enable fuzzing
 ac_add_options --enable-fuzzing
+#ac_add_options --enable-coverage
 
 # Enable address sanitizer
 ac_add_options --enable-address-sanitizer
-
-# Add ASan to our compiler flags
-export CFLAGS="-fsanitize=fuzzer,address -Dxmalloc=myxmalloc -fPIC"
-export CXXFLAGS="-fsanitize=fuzzer,address -Dxmalloc=myxmalloc -fPIC"
-
-# Additionally, we need the ASan flag during linking. Normally, our C/CXXFLAGS would
-# be used during linking as well but there is at least one place in our build where
-# our CFLAGS are not added during linking.
-# Note: The use of this flag causes Clang to automatically link the ASan runtime :)
-export LDFLAGS="-fsanitize=fuzzer,address"
+ac_add_options --enable-undefined-sanitizer
 
 # These three are required by ASan
 ac_add_options --disable-jemalloc
@@ -35,8 +27,12 @@ export MOZ_DEBUG_SYMBOLS=1
 ac_add_options --enable-debug-symbols
 ac_add_options --disable-install-strip
 
-# ASan specific options on Linux
-ac_add_options --enable-valgrind
+## ASan specific options on Linux
+#ac_add_options --enable-valgrind
 
 # ASan specific options on Linux
 ac_add_options --enable-js-fuzzilli
+
+# Additional compiler flags to partially instrument the JS engine
+export CFLAGS="-fsanitize-coverage-allowlist=/home/yousef/cache-ir-fuzzer/mozilla-unified/allowlist.txt  -fsanitize-coverage-blocklist=/home/yousef/cache-ir-fuzzer/mozilla-unified/blocklist.txt"
+export CXXFLAGS="-fsanitize-coverage-allowlist=/home/yousef/cache-ir-fuzzer/mozilla-unified/allowlist.txt  -fsanitize-coverage-blocklist=/home/yousef/cache-ir-fuzzer/mozilla-unified/blocklist.txt"

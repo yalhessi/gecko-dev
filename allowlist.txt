@@ -1,0 +1,12 @@
+src:/home/yousef/cache-ir-fuzzer/mozilla-unified/js/src/jit/BaselineBailouts.h
+src:/home/yousef/cache-ir-fuzzer/mozilla-unified/js/src/jit/BaselineBailouts.cpp
+src:/home/yousef/cache-ir-fuzzer/mozilla-unified/js/src/jit/BaselineCacheIRCompiler.h
+src:/home/yousef/cache-ir-fuzzer/mozilla-unified/js/src/jit/BaselineCacheIRCompiler.cpp
+src:/home/yousef/cache-ir-fuzzer/mozilla-unified/js/src/jit/BaselineIC.h
+src:/home/yousef/cache-ir-fuzzer/mozilla-unified/js/src/jit/BaselineIC.cpp
+src:/home/yousef/cache-ir-fuzzer/mozilla-unified/js/src/jit/BaselineICList.h
+src:/home/yousef/cache-ir-fuzzer/mozilla-unified/js/src/jit/CacheIR.h
+src:/home/yousef/cache-ir-fuzzer/mozilla-unified/js/src/jit/CacheIR.cpp
+src:/home/yousef/cache-ir-fuzzer/mozilla-unified/js/src/jit/CacheIRCompiler.h
+src:/home/yousef/cache-ir-fuzzer/mozilla-unified/js/src/jit/CacheIRCompiler.cpp
+fun:*
