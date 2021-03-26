@@ -523,10 +523,10 @@ class SpiderMonkeyUnwinder(Unwinder):
         self.unwinder_state = None
 
         # Disabled by default until we figure out issues in gdb.
-        self.enabled = False
+        self.enabled = True
         gdb.write(
-            "SpiderMonkey unwinder is disabled by default, to enable it type:\n"
-            + "\tenable unwinder .* SpiderMonkey\n"
+            "SpiderMonkey unwinder is enabled by default, to disable it type:\n"
+            + "\tdisable unwinder .* SpiderMonkey\n"
         )
         # Some versions of gdb did not flush the internal frame cache
         # when enabling or disabling an unwinder.  This was fixed in
