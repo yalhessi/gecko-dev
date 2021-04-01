@@ -2932,3 +2932,19 @@ bool BaselineCacheIRCompiler::emitCallInlinedFunction(ObjOperandId calleeId,
 
   return true;
 }
+
+bool BaselineCacheIRCompiler::emitCoverageGuard() {
+  allocator.discardStack(masm);
+
+  AutoScratchRegister scratch(allocator, masm);
+
+  AutoStubFrame stubFrame(*this);
+  stubFrame.enter(masm, scratch);
+
+  using Fn = bool (*)(JSContext*);
+  callVM<Fn, AddNewTracePCGuard>(masm);
+
+  stubFrame.leave(masm);
+  return true;
+}
+

@@ -110,6 +110,7 @@
 #include "js/Exception.h"                  // JS::StealPendingExceptionStack
 #include "js/experimental/CodeCoverage.h"  // js::EnableCodeCoverage
 #include "js/experimental/CTypes.h"        // JS::InitCTypesClass
+// #include "js/experimental/Fuzzilli.h"
 #include "js/experimental/Intl.h"  // JS::AddMoz{DateTimeFormat,DisplayNames}Constructor
 #include "js/experimental/JitInfo.h"  // JSJit{Getter,Setter,Method}CallArgs, JSJitGetterInfo, JSJit{Getter,Setter}Op, JSJitInfo
 #include "js/experimental/SourceHook.h"  // js::{Set,Forget,}SourceHook
@@ -217,6 +218,15 @@ struct shmem_data {
 struct shmem_data* __shmem;
 
 uint32_t *__edges_start, *__edges_stop;
+
+uint32_t* __sanitizer_cov_next_available_guard() {
+  if (__edges_stop - __edges_stop < MAX_EDGES) {
+    __shmem->num_edges++;
+    return __edges_stop++;
+  }
+  return __edges_stop;
+}
+
 void __sanitizer_cov_reset_edgeguards() {
   uint64_t N = 0;
   for (uint32_t* x = __edges_start; x < __edges_stop && N < MAX_EDGES; x++)

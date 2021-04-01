@@ -1008,11 +1008,14 @@ AttachDecision GetPropIRGenerator::tryAttachNative(HandleObject obj,
 
       if (mode_ == ICState::Mode::Megamorphic) {
         attachMegamorphicNativeSlot(objId, id, holder == nullptr);
+        writer.coverageGuard();
         return AttachDecision::Attach;
       }
 
       maybeEmitIdGuard(id);
+      writer.coverageGuard();
       EmitReadSlotResult(writer, nobj, holder, shape, objId);
+      writer.coverageGuard();
       writer.returnFromIC();
 
       trackAttached("NativeSlot");
@@ -1023,10 +1026,11 @@ AttachDecision GetPropIRGenerator::tryAttachNative(HandleObject obj,
       auto* nobj = &obj->as<NativeObject>();
 
       maybeEmitIdGuard(id);
-
+      writer.coverageGuard();
       if (!isSuper() && CanAttachDOMGetterSetter(cx_, JSJitInfo::Getter, nobj,
                                                  shape, mode_)) {
         EmitCallDOMGetterResult(cx_, writer, nobj, holder, shape, objId);
+        writer.coverageGuard();
 
         trackAttached("DOMGetter");
         return AttachDecision::Attach;
@@ -1034,6 +1038,7 @@ AttachDecision GetPropIRGenerator::tryAttachNative(HandleObject obj,
 
       EmitCallGetterResult(cx_, writer, nobj, holder, shape, objId, receiverId,
                            mode_);
+      writer.coverageGuard();
 
       trackAttached("NativeGetter");
       return AttachDecision::Attach;

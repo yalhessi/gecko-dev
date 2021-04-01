@@ -81,7 +81,6 @@ UNIFIED_SOURCES += [
     "TrialInlining.cpp",
     "TypePolicy.cpp",
     "ValueNumbering.cpp",
-    "VMFunctions.cpp",
     "WarpBuilder.cpp",
     "WarpBuilderShared.cpp",
     "WarpCacheIRTranspiler.cpp",
@@ -262,6 +261,7 @@ if CONFIG["FUZZING_INTERFACES"] or CONFIG["FUZZING_JS_FUZZILLI"]:
         "BaselineIC.cpp",
         "CacheIR.cpp",
         "CacheIRCompiler.cpp",
+        "VMFunctions.cpp",
     ]
 else:
     UNIFIED_SOURCES += [
@@ -270,6 +270,7 @@ else:
         "BaselineIC.cpp",
         "CacheIR.cpp",
         "CacheIRCompiler.cpp",
+        "VMFunctions.cpp",
 ]
 
 

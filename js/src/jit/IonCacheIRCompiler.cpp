@@ -2023,3 +2023,7 @@ bool IonCacheIRCompiler::emitHasClassResult(ObjOperandId objId,
                                             uint32_t claspOffset) {
   MOZ_CRASH("Call ICs not used in ion");
 }
+
+bool IonCacheIRCompiler::emitCoverageGuard() {
+  return true;
+}

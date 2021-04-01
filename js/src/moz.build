@@ -230,6 +230,7 @@ EXPORTS.js += [
 EXPORTS.js.experimental += [
     "../public/experimental/CodeCoverage.h",
     "../public/experimental/CTypes.h",
+    "../public/experimental/Fuzzilli.h",
     "../public/experimental/Intl.h",
     "../public/experimental/JitInfo.h",
     "../public/experimental/JSStencil.h",
@@ -594,3 +595,6 @@ if CONFIG["JS_HAS_CTYPES"]:
 # Suppress warnings in third-party code.
 if CONFIG["CC_TYPE"] in ("clang", "gcc"):
     SOURCES["util/DoubleToString.cpp"].flags += ["-Wno-implicit-fallthrough"]
+
+if CONFIG["FUZZING_JS_FUZZILLI"]:
+    OS_LIBS += ["rt"]

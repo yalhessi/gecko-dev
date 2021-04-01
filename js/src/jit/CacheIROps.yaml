@@ -2625,3 +2625,9 @@
   args:
     val: ValId
     mustBeRecovered: BoolImm
+
+- name: CoverageGuard
+  shared: false
+  transpile: false
+  cost_estimate: 1
+  args:

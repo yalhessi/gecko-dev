@@ -20,6 +20,7 @@
 #include "jit/JitRuntime.h"
 #include "jit/mips32/Simulator-mips32.h"
 #include "jit/mips64/Simulator-mips64.h"
+// #include "js/experimental/Fuzzilli.h"
 #include "js/friend/ErrorMessages.h"  // js::GetErrorMessage, JSMSG_*
 #include "js/friend/StackLimits.h"    // js::CheckRecursionLimitWithExtra
 #include "js/friend/WindowProxy.h"    // js::IsWindow
@@ -668,6 +669,12 @@ bool JitRuntime::generateVMWrappers(JSContext* cx, MacroAssembler& masm) {
     return false;
   }
 
+  return true;
+}
+
+bool AddNewTracePCGuard(JSContext* cx) {
+  uint32_t* guard = __sanitizer_cov_next_available_guard();
+  __sanitizer_cov_trace_pc_guard(&guard);
   return true;
 }
 

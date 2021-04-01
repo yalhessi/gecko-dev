@@ -34,6 +34,7 @@ namespace jit {
 // (must be unique, used for the VMFunctionId enum and profiling) and the C++
 // function to be called. This list must be sorted on the name field.
 #define VMFUNCTION_LIST(_)                                                     \
+  _(AddNewTracePCGuard, js::jit::AddNewTracePCGuard)                           \
   _(AddOrUpdateSparseElementHelper, js::AddOrUpdateSparseElementHelper)        \
   _(ArgumentsObjectCreateForInlinedIon,                                        \
     js::ArgumentsObject::createForInlinedIon)                                  \

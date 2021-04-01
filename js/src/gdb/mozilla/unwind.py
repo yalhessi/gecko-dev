@@ -116,6 +116,9 @@ class UnwinderTypeCache(object):
         self.d["JSFunction"] = gdb.lookup_type("JSFunction").pointer()
         self.d["JSScript"] = gdb.lookup_type("JSScript").pointer()
         self.d["Value"] = gdb.lookup_type("JS::Value")
+        self.d["BaseShape"] = gdb.lookup_type("js::BaseShape").pointer()
+        self.d["Shape"] = gdb.lookup_type("js::Shape").pointer()
+        self.d["Class"] = gdb.lookup_type("JSClass").pointer()
 
         self.d["SOURCE_SLOT"] = self.value("js::ScriptSourceObject::SOURCE_SLOT")
         self.d["NativeObject"] = gdb.lookup_type("js::NativeObject").pointer()
@@ -213,9 +216,10 @@ class JitFrameDecorator(FrameDecorator):
                     nativeobj = obj.cast(self.cache.NativeObject)
                     # See bug 987069 and despair.  At least this
                     # approach won't give exceptions.
-                    class_name = nativeobj["group_"]["value"]["clasp_"]["name"].string(
-                        "ISO-8859-1"
-                    )
+                    class_name = nativeobj["header_"].cast(self.cache.Shape)["header_"].cast(self.cache.BaseShape)["header_"].cast(self.cache.Class)["name"].string("ISO-8859-1")
+                    # class_name = nativeobj["group_"]["value"]["clasp_"]["name"].string(
+                    #     "ISO-8859-1"
+                    # )
                     if class_name != "ScriptSource":
                         return FrameDecorator.filename(self)
                     scriptsourceobj = (nativeobj + 1).cast(self.cache.HeapSlot)[
@@ -223,6 +227,8 @@ class JitFrameDecorator(FrameDecorator):
                     ]
                     scriptsource = scriptsourceobj["value"]["asBits_"] << 1
                     scriptsource = scriptsource.cast(self.cache.ScriptSource)
+                    breakpoint()
+                    return scriptsource["filename_"]["mStorage"]["val"]["box_"]["chars_"]["chars_"]["mTuple"]["mFirstA"].string()
                     return scriptsource["filename_"]["mTuple"]["mFirstA"].string()
         return FrameDecorator.filename(self)
 
@@ -581,7 +587,6 @@ class SpiderMonkeyUnwinder(Unwinder):
 def register_unwinder(objfile):
     """Register the unwinder and frame filter with |objfile|.  If |objfile|
     is None, register them globally."""
-
     type_cache = UnwinderTypeCache()
     unwinder = None
     # This currently only works on Linux, due to parse_proc_maps.

@@ -345,6 +345,8 @@ struct LastArg<HeadType, TailTypes...> {
   using Type = typename LastArg<TailTypes...>::Type;
 };
 
+[[nodiscard]] bool AddNewTracePCGuard(JSContext* cx);
+
 [[nodiscard]] bool InvokeFunction(JSContext* cx, HandleObject obj0,
                                   bool constructing, bool ignoresReturnValue,
                                   uint32_t argc, Value* argv,
