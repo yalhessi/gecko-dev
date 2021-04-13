@@ -2934,7 +2934,7 @@ bool BaselineCacheIRCompiler::emitCallInlinedFunction(ObjOperandId calleeId,
 }
 
 bool BaselineCacheIRCompiler::emitCoverageGuard() {
-  allocator.discardStack(masm);
+  // allocator.discardStack(masm);
 
   AutoScratchRegister scratch(allocator, masm);
 
@@ -2945,6 +2945,7 @@ bool BaselineCacheIRCompiler::emitCoverageGuard() {
   callVM<Fn, AddNewTracePCGuard>(masm);
 
   stubFrame.leave(masm);
+
   return true;
 }
 

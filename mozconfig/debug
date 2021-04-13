@@ -11,21 +11,21 @@ ac_add_options --enable-jitspew
 ###ac_add_options --enable-debug-symbols=-g3
 
 # Enable fuzzing
-#ac_add_options --enable-fuzzing
+ac_add_options --enable-fuzzing
 #ac_add_options --enable-coverage
 
 # Enable address sanitizer
-#ac_add_options --enable-address-sanitizer
-#ac_add_options --enable-undefined-sanitizer
+ac_add_options --enable-address-sanitizer
+ac_add_options --enable-undefined-sanitizer
 
 # These three are required by ASan
-#ac_add_options --disable-jemalloc
-#ac_add_options --disable-crashreporter
+ac_add_options --disable-jemalloc
+ac_add_options --disable-crashreporter
 
 # Keep symbols to symbolize ASan traces later
-#export MOZ_DEBUG_SYMBOLS=1
-#ac_add_options --enable-debug-symbols
-#ac_add_options --disable-install-strip
+export MOZ_DEBUG_SYMBOLS=1
+ac_add_options --enable-debug-symbols
+ac_add_options --disable-install-strip
 
 ## ASan specific options on Linux
 #ac_add_options --enable-valgrind
@@ -34,5 +34,5 @@ ac_add_options --enable-jitspew
 ac_add_options --enable-js-fuzzilli
 
 # Additional compiler flags to partially instrument the JS engine
-export CFLAGS="-fsanitize-coverage-allowlist=/home/yousef/cache-ir-fuzzer/mozilla-unified/allowlist.txt  -fsanitize-coverage-blocklist=/home/yousef/cache-ir-fuzzer/mozilla-unified/blocklist.txt -ggdb3"
-export CXXFLAGS="-fsanitize-coverage-allowlist=/home/yousef/cache-ir-fuzzer/mozilla-unified/allowlist.txt  -fsanitize-coverage-blocklist=/home/yousef/cache-ir-fuzzer/mozilla-unified/blocklist.txt -ggdb3"
+export CFLAGS="-fsanitize-coverage-allowlist=/home/yousef/cache-ir-fuzzer/mozilla-unified/allowlist.txt  -fsanitize-coverage-blocklist=/home/yousef/cache-ir-fuzzer/mozilla-unified/blocklist.txt"
+export CXXFLAGS="-fsanitize-coverage-allowlist=/home/yousef/cache-ir-fuzzer/mozilla-unified/allowlist.txt  -fsanitize-coverage-blocklist=/home/yousef/cache-ir-fuzzer/mozilla-unified/blocklist.txt"
