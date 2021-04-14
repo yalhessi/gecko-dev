@@ -6,6 +6,7 @@
 
 #include "jit/CacheIR.h"
 
+#include "mozilla/Assertions.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/FloatingPoint.h"
 #include "mozilla/Unused.h"
@@ -980,10 +981,35 @@ void GetPropIRGenerator::attachMegamorphicNativeSlot(ObjOperandId objId,
 
   if (cacheKind_ == CacheKind::GetProp ||
       cacheKind_ == CacheKind::GetPropSuper) {
+    /*EXAMPLE: for now the best way to get here is to force megamorphic ics
+setJitCompilerOption("ic.force-megamorphic", 1);
+var point = {x: 1};
+function foo() { return point.x }
+foo();
+
+ALTERNATIVELY: you can mess with the shape a bunch, generating stubs between
+every shape shift
+var point = {}
+function foo() { return point.x }
+foo();
+point.x = 1; foo();
+point.a = 0; foo();
+point.b = 0; foo();
+point.c = 0; foo();
+point.d = 0; foo();
+point. e = 0;foo();
+*/
     writer.megamorphicLoadSlotResult(objId, JSID_TO_ATOM(id)->asPropertyName());
   } else {
     MOZ_ASSERT(cacheKind_ == CacheKind::GetElem ||
                cacheKind_ == CacheKind::GetElemSuper);
+    /* EXAMPLE:
+    var point = {x: 1}
+    function foo(x) { return point[x] }
+    function bar() { foo('a'); foo('b'); foo('c'); foo('d'); foo('e'); foo('f')
+}
+bar();
+*/
     writer.megamorphicLoadSlotByValueResult(objId, getElemKeyValueId());
   }
   writer.returnFromIC();
@@ -1018,6 +1044,15 @@ AttachDecision GetPropIRGenerator::tryAttachNative(HandleObject obj,
       writer.coverageGuard();
       writer.returnFromIC();
 
+      /* EXAMPLE
+var point = {x: 1};
+function foo() { return point.x };
+foo();
+
+var point = {x: 1};
+function foo(x) { return point[x] };
+foo("x");
+      */
       trackAttached("NativeSlot");
       return AttachDecision::Attach;
     }
@@ -1036,6 +1071,16 @@ AttachDecision GetPropIRGenerator::tryAttachNative(HandleObject obj,
         return AttachDecision::Attach;
       }
 
+      /* EXAMPLE: we lump all getter accessors here (scripted and native)
+
+var point = {slot0: true, get value() { return this.slot0 } }
+function foo() { return point.value }
+foo()
+
+AS FAR AS I CAN TELL, THE ONLY WAY TO ADD NATIVE ACCESSOR IS:
+Object.defineProperty(point, "native", { get: Array })
+foo();
+*/
       EmitCallGetterResult(cx_, writer, nobj, holder, shape, objId, receiverId,
                            mode_);
       writer.coverageGuard();
@@ -1661,7 +1706,20 @@ AttachDecision GetPropIRGenerator::tryAttachObjectLength(HandleObject obj,
   }
 
   if (obj->is<ArrayObject>()) {
+    /* EXAMPLE MOST array.length ends up here
+var list = ...some array...
+function foo() { return list.length }
+foo();
+*/
     if (obj->as<ArrayObject>().length() > INT32_MAX) {
+      /* EXAMPLE YOU HAVE TO CHANGE array.length by hand otherwise it spins for
+a while
+var list = []
+list.length = 2147483648
+function foo() { return list.length }
+foo()
+*/
+
       return AttachDecision::NoAction;
     }
 
@@ -1676,6 +1734,12 @@ AttachDecision GetPropIRGenerator::tryAttachObjectLength(HandleObject obj,
 
   if (obj->is<ArgumentsObject>() &&
       !obj->as<ArgumentsObject>().hasOverriddenLength()) {
+    /* EXAMPLE THIS IS A PRETTY GNARLY CASE BECAUSE YOU HAVE TO PASS AN OBJECT
+THAT HAPPENS TO BE AN ARGUMENTS OBJECT
+function foo() { return bar(arguments)}
+function bar(arg) { return arg.length }
+foo();
+*/
     maybeEmitIdGuard(id);
     if (obj->is<MappedArgumentsObject>()) {
       writer.guardClass(objId, GuardClassKind::MappedArguments);
@@ -1750,6 +1814,7 @@ AttachDecision GetPropIRGenerator::tryAttachTypedArray(HandleObject obj,
       writer.loadArrayBufferViewLengthInt32Result(objId);
     } else {
       writer.loadArrayBufferViewLengthDoubleResult(objId);
+      MOZ_ASSERT_UNREACHABLE("inside typed array.length but length is too big");
     }
     trackAttached("TypedArrayLength");
   } else if (isByteOffset) {
@@ -2617,6 +2682,7 @@ AttachDecision GetPropIRGenerator::tryAttachProxyElement(HandleObject obj,
 void GetPropIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.valueProperty("base", val_);
     sp.valueProperty("property", idVal_);
   }
