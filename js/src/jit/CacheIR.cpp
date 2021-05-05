@@ -1064,6 +1064,11 @@ foo("x");
       writer.coverageGuard();
       if (!isSuper() && CanAttachDOMGetterSetter(cx_, JSJitInfo::Getter, nobj,
                                                  shape, mode_)) {
+        /* EXAMPLE THERE IS ONLY ONE WAY TO TEST DOM OBJECTS IN THE SHELL
+var o = new FakeDOMObject();
+function foo() { return d.x }
+foo();
+*/
         EmitCallDOMGetterResult(cx_, writer, nobj, holder, shape, objId);
         writer.coverageGuard();
 
@@ -1804,6 +1809,15 @@ AttachDecision GetPropIRGenerator::tryAttachTypedArray(HandleObject obj,
   }
 
   auto* tarr = &obj->as<TypedArrayObject>();
+  /* EXAMPLE: ALL OF THESE ARE SIMILAR; TO REACH DOUBLE RESULTS WE HAVE TO
+  ENABLE --large-arraybuffers
+
+const gb = 1 * 1024 * 1024 * 1024;
+const bufferLarge = new ArrayBuffer(6 * gb);
+const taLargeLength = new Uint8Array(bufferLarge);
+function foo() { return taLargeLength.length }
+foo();
+*/
 
   maybeEmitIdGuard(id);
   // Emit all the normal guards for calling this native, but specialize
@@ -1814,7 +1828,6 @@ AttachDecision GetPropIRGenerator::tryAttachTypedArray(HandleObject obj,
       writer.loadArrayBufferViewLengthInt32Result(objId);
     } else {
       writer.loadArrayBufferViewLengthDoubleResult(objId);
-      MOZ_ASSERT_UNREACHABLE("inside typed array.length but length is too big");
     }
     trackAttached("TypedArrayLength");
   } else if (isByteOffset) {
@@ -2998,6 +3011,7 @@ AttachDecision GetNameIRGenerator::tryAttachEnvironmentName(ObjOperandId objId,
 void GetNameIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.valueProperty("base", ObjectValue(*env_));
     sp.valueProperty("property", StringValue(name_));
   }
@@ -3135,6 +3149,7 @@ AttachDecision BindNameIRGenerator::tryAttachEnvironmentName(ObjOperandId objId,
 void BindNameIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.valueProperty("base", ObjectValue(*env_));
     sp.valueProperty("property", StringValue(name_));
   }
@@ -3446,6 +3461,7 @@ AttachDecision HasPropIRGenerator::tryAttachStub() {
 void HasPropIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.valueProperty("base", val_);
     sp.valueProperty("property", idVal_);
   }
@@ -3516,6 +3532,7 @@ AttachDecision CheckPrivateFieldIRGenerator::tryAttachNative(JSObject* obj,
 void CheckPrivateFieldIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.valueProperty("base", val_);
     sp.valueProperty("property", idVal_);
   }
@@ -3648,6 +3665,14 @@ static void EmitStoreSlotAndReturn(CacheIRWriter& writer, ObjOperandId objId,
   writer.returnFromIC();
 }
 
+static Shape* LookupShapeForSetSlot(NativeObject* obj, jsid id) {
+  Shape* shape = obj->lookupPure(id);
+  if (shape && shape->isDataProperty() && shape->writable())
+      return shape;
+  return nullptr;
+
+}
+
 static Shape* LookupShapeForSetSlot(JSOp op, NativeObject* obj, jsid id) {
   Shape* shape = obj->lookupPure(id);
   if (!shape || !shape->isDataProperty() || !shape->writable()) {
@@ -3663,6 +3688,16 @@ static Shape* LookupShapeForSetSlot(JSOp op, NativeObject* obj, jsid id) {
   }
 
   return shape;
+}
+
+static bool CanAttachNativeSetSlot(JSObject* obj, JS::PropertyKey id,
+                                   Shape** propShape) {
+  if (!obj->is<NativeObject>()) {
+    return false;
+  }
+
+  *propShape = LookupShapeForSetSlot(&obj->as<NativeObject>(), id);
+  return *propShape;
 }
 
 static bool CanAttachNativeSetSlot(JSOp op, JSObject* obj, JS::PropertyKey id,
@@ -3765,6 +3800,7 @@ static bool ValueIsNumeric(Scalar::Type type, const Value& val) {
 void SetPropIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.opcodeProperty("op", JSOp(*pc_));
     sp.valueProperty("base", lhsVal_);
     sp.valueProperty("property", idVal_);
@@ -4759,6 +4795,7 @@ AttachDecision InstanceOfIRGenerator::tryAttachStub() {
 void InstanceOfIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.valueProperty("lhs", lhsVal_);
     sp.valueProperty("rhs", ObjectValue(*rhsObj_));
   }
@@ -4776,6 +4813,7 @@ TypeOfIRGenerator::TypeOfIRGenerator(JSContext* cx, HandleScript script,
 void TypeOfIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.valueProperty("val", val_);
   }
 #endif
@@ -4889,6 +4927,7 @@ AttachDecision GetIteratorIRGenerator::tryAttachNativeIterator(
 void GetIteratorIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.valueProperty("val", val_);
   }
 #endif
@@ -5046,6 +5085,7 @@ AttachDecision OptimizeSpreadCallIRGenerator::tryAttachNotOptimizable() {
 void OptimizeSpreadCallIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.valueProperty("val", val_);
   }
 #endif
@@ -9445,6 +9485,7 @@ AttachDecision CallIRGenerator::tryAttachStub() {
 void CallIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.valueProperty("callee", callee_);
     sp.valueProperty("thisval", thisval_);
     sp.valueProperty("argc", Int32Value(argc_));
@@ -10024,6 +10065,7 @@ AttachDecision CompareIRGenerator::tryAttachStub() {
 void CompareIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.valueProperty("lhs", lhsVal_);
     sp.valueProperty("rhs", rhsVal_);
     sp.opcodeProperty("op", op_);
@@ -10039,6 +10081,7 @@ ToBoolIRGenerator::ToBoolIRGenerator(JSContext* cx, HandleScript script,
 void ToBoolIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.valueProperty("val", val_);
   }
 #endif
@@ -10160,6 +10203,7 @@ GetIntrinsicIRGenerator::GetIntrinsicIRGenerator(JSContext* cx,
 void GetIntrinsicIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.valueProperty("val", val_);
   }
 #endif
@@ -10185,6 +10229,7 @@ UnaryArithIRGenerator::UnaryArithIRGenerator(JSContext* cx, HandleScript script,
 void UnaryArithIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.valueProperty("val", val_);
     sp.valueProperty("res", res_);
   }
@@ -10478,6 +10523,7 @@ ToPropertyKeyIRGenerator::ToPropertyKeyIRGenerator(JSContext* cx,
 void ToPropertyKeyIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.valueProperty("val", val_);
   }
 #endif
@@ -10572,6 +10618,7 @@ BinaryArithIRGenerator::BinaryArithIRGenerator(
 void BinaryArithIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.opcodeProperty("op", op_);
     sp.valueProperty("rhs", rhs_);
     sp.valueProperty("lhs", lhs_);
@@ -11063,6 +11110,7 @@ NewObjectIRGenerator::NewObjectIRGenerator(JSContext* cx, HandleScript script,
 void NewObjectIRGenerator::trackAttached(const char* name) {
 #ifdef JS_CACHEIR_SPEW
   if (const CacheIRSpewer::Guard& sp = CacheIRSpewer::Guard(*this, name)) {
+    MOZ_DBG(name);
     sp.opcodeProperty("op", op_);
   }
 #endif
