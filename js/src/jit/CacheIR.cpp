@@ -1034,14 +1034,14 @@ AttachDecision GetPropIRGenerator::tryAttachNative(HandleObject obj,
 
       if (mode_ == ICState::Mode::Megamorphic) {
         attachMegamorphicNativeSlot(objId, id, holder == nullptr);
-        writer.coverageGuard();
+        // writer.coverageGuard();
         return AttachDecision::Attach;
       }
 
       maybeEmitIdGuard(id);
-      writer.coverageGuard();
+      // writer.coverageGuard();
       EmitReadSlotResult(writer, nobj, holder, shape, objId);
-      writer.coverageGuard();
+      // writer.coverageGuard();
       writer.returnFromIC();
 
       /* EXAMPLE
@@ -3734,6 +3734,7 @@ AttachDecision SetPropIRGenerator::tryAttachNativeSetSlot(HandleObject obj,
                                                           HandleId id,
                                                           ValOperandId rhsId) {
   Shape* propShape = nullptr;
+  // if (!CanAttachNativeSetSlot(obj, id, &propShape)) {
   if (!CanAttachNativeSetSlot(JSOp(*pc_), obj, id, &propShape)) {
     return AttachDecision::NoAction;
   }

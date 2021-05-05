@@ -325,9 +325,9 @@ class ObjectElements {
     flags |= FROZEN;
   }
 
-  bool isFrozen() const { return flags & FROZEN; }
 
  public:
+  bool isFrozen() const { return flags & FROZEN; }
   constexpr ObjectElements(uint32_t capacity, uint32_t length)
       : flags(0), initializedLength(0), capacity(capacity), length(length) {}
 
