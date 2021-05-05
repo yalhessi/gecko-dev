@@ -4081,7 +4081,8 @@ AttachDecision SetPropIRGenerator::tryAttachSetDenseElementHole(
   }
 
   NativeObject* nobj = &obj->as<NativeObject>();
-  if (!nobj->isExtensible()) {
+  if (nobj->getElementsHeader()->isFrozen()) {
+  // if (!nobj->isExtensible()) {
     return AttachDecision::NoAction;
   }
 
@@ -4125,7 +4126,7 @@ AttachDecision SetPropIRGenerator::tryAttachSetDenseElementHole(
     ShapeGuardProtoChain(writer, nobj, objId);
   }
 
-  writer.storeDenseElementHole(objId, indexId, rhsId, isAdd);
+  writer.js(objId, indexId, rhsId, isAdd);
   writer.returnFromIC();
 
   trackAttached(isAdd ? "AddDenseElement" : "StoreDenseElementHole");
