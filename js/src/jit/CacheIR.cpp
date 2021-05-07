@@ -1248,7 +1248,7 @@ AttachDecision GetPropIRGenerator::tryAttachCrossCompartmentWrapper(
   // keep the compartment alive.
   RootedObject wrappedTargetGlobal(cx_, &unwrapped->nonCCWGlobal());
   if (!cx_->compartment()->wrap(cx_, &wrappedTargetGlobal)) {
-    cx_->clearPendingException();
+    // cx_->clearPendingException();
     return AttachDecision::NoAction;
   }
 
