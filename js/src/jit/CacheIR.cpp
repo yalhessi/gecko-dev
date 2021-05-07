@@ -3734,8 +3734,8 @@ AttachDecision SetPropIRGenerator::tryAttachNativeSetSlot(HandleObject obj,
                                                           HandleId id,
                                                           ValOperandId rhsId) {
   Shape* propShape = nullptr;
-  // if (!CanAttachNativeSetSlot(obj, id, &propShape)) {
-  if (!CanAttachNativeSetSlot(JSOp(*pc_), obj, id, &propShape)) {
+  if (!CanAttachNativeSetSlot(obj, id, &propShape)) {
+  // if (!CanAttachNativeSetSlot(JSOp(*pc_), obj, id, &propShape)) {
     return AttachDecision::NoAction;
   }
 
