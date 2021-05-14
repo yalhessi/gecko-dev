@@ -720,9 +720,9 @@ static void GeneratePrototypeGuards(CacheIRWriter& writer, JSObject* obj,
 static void GeneratePrototypeHoleGuards(CacheIRWriter& writer,
                                         NativeObject* obj, ObjOperandId objId,
                                         bool alwaysGuardFirstProto) {
-  if (alwaysGuardFirstProto) {
-    GuardReceiverProto(writer, obj, objId);
-  }
+  // if (alwaysGuardFirstProto) {
+    // GuardReceiverProto(writer, obj, objId);
+  // }
 
   JSObject* pobj = obj->staticPrototype();
   while (pobj) {
