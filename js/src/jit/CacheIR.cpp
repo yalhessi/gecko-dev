@@ -4126,7 +4126,7 @@ AttachDecision SetPropIRGenerator::tryAttachSetDenseElementHole(
     ShapeGuardProtoChain(writer, nobj, objId);
   }
 
-  writer.js(objId, indexId, rhsId, isAdd);
+  writer.storeDenseElementHole(objId, indexId, rhsId, isAdd);
   writer.returnFromIC();
 
   trackAttached(isAdd ? "AddDenseElement" : "StoreDenseElementHole");
